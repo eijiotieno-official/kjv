@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -9,9 +10,7 @@ import 'package:kjv/services/read_last_index.dart';
 import 'package:kjv/widgets/verse_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:clipboard/clipboard.dart';
 
-// Home page of the application
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -22,17 +21,19 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void initState() {
+    // We will resume to the last position the user was
     // Delayed execution to allow the UI to build before scrolling
     Future.delayed(
       const Duration(milliseconds: 100),
       () async {
         MainProvider mainProvider =
             Provider.of<MainProvider>(context, listen: false);
+
         // Read the last index and scroll to it
         await ReadLastIndex.execute().then(
-          (value) {
-            if (value != null) {
-              mainProvider.scrollToIndex(index: value);
+          (index) {
+            if (index != null) {
+              mainProvider.scrollToIndex(index: index);
             }
           },
         );
@@ -42,11 +43,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Process selected verses to create a formatted string
-  String processSelectedVerses({required List<Verse> verses}) {
+  String formattedSelectedVerses({required List<Verse> verses}) {
     String result = verses
         .map((e) => " [${e.book} ${e.chapter}:${e.verse}] ${e.text.trim()}")
         .join();
-    return "$result[KJV]";
+
+    return "$result [KJV]";
   }
 
   @override
@@ -54,12 +56,9 @@ class _HomePageState extends State<HomePage> {
     // Using Consumer to listen to changes in MainProvider
     return Consumer<MainProvider>(
       builder: (context, mainProvider, child) {
-        // Extracting necessary properties from MainProvider
         List<Verse> verses = mainProvider.verses;
         Verse? currentVerse = mainProvider.currentVerse;
-        bool isSelected = mainProvider.selectedVerse.isNotEmpty;
-
-        // Building the UI with AnnotatedRegion for system UI overlay style
+        bool isSelected = mainProvider.selectedVerses.isNotEmpty;
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             systemNavigationBarColor: Theme.of(context).colorScheme.background,
@@ -70,7 +69,6 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Scaffold(
             appBar: AppBar(
-              // Conditional title for showing the current book on tap
               title: currentVerse == null || isSelected
                   ? null
                   : GestureDetector(
@@ -78,60 +76,53 @@ class _HomePageState extends State<HomePage> {
                         // Navigate to BooksPage on tap
                         Get.to(
                           () => BooksPage(
-                            chapterIdx: currentVerse.chapter,
-                            bookIdx: currentVerse.book,
-                          ),
+                              chapterIdx: currentVerse.chapter,
+                              bookIdx: currentVerse.book),
                           transition: Transition.leftToRight,
                         );
                       },
-                      child: Text(
-                        currentVerse.book,
-                      ),
+                      child: Text(currentVerse.book),
                     ),
-              // Actions in the AppBar
               actions: [
-                // Copy button for selected verses
                 if (isSelected)
                   IconButton(
                     onPressed: () async {
                       // Copy selected verses to clipboard
-                      String string = processSelectedVerses(
-                          verses: mainProvider.selectedVerse);
+                      String string = formattedSelectedVerses(
+                          verses: mainProvider.selectedVerses);
                       await FlutterClipboard.copy(string).then(
-                        (_) => mainProvider.clearSelected(),
+                        (_) => mainProvider.clearSelectedVerses(),
                       );
                     },
-                    icon: const Icon(Icons.copy_outlined),
+                    icon: const Icon(
+                      Icons.copy_rounded,
+                    ),
                   ),
-                // Search button when no verses are selected
                 if (!isSelected)
                   IconButton(
-                    onPressed: () {
-                      // Navigate to SearchPage on tap
+                    onPressed: () async {
+                      /// Navigate to [SearchPage] on tap
                       Get.to(
-                        () => SearchPage(verses: mainProvider.verses),
+                        () => SearchPage(verses: verses),
                         transition: Transition.rightToLeft,
                       );
                     },
-                    icon: const Icon(Icons.search_rounded),
+                    icon: const Icon(
+                      Icons.search_rounded,
+                    ),
                   ),
               ],
             ),
             // Body of the Scaffold with a ScrollablePositionedList
             body: ScrollablePositionedList.builder(
-              physics: const BouncingScrollPhysics(),
               itemCount: verses.length,
               itemBuilder: (context, index) {
                 Verse verse = verses[index];
-                return VerseWidget(
-                  verse: verse,
-                  index: index,
-                );
+                return VerseWidget(verse: verse, index: index);
               },
-              // Scroll controllers and listeners from MainProvider
               itemScrollController: mainProvider.itemScrollController,
-              scrollOffsetController: mainProvider.scrollOffsetController,
               itemPositionsListener: mainProvider.itemPositionsListener,
+              scrollOffsetController: mainProvider.scrollOffsetController,
               scrollOffsetListener: mainProvider.scrollOffsetListener,
             ),
           ),

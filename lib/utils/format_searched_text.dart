@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Function to format searched text with highlighted matches
-Text formatSearchedText({
+Text formatSearchText({
   required String input,
   required String text,
   required BuildContext context,
@@ -26,9 +26,7 @@ Text formatSearchedText({
   // Loop through the matches
   for (Match match in matches) {
     // Add non-matching text span
-    textSpans.add(
-      TextSpan(text: input.substring(currentIndex, match.start)),
-    );
+    textSpans.add(TextSpan(text: input.substring(currentIndex, match.start)));
 
     // Add matching text span with styling
     textSpans.add(
@@ -41,14 +39,12 @@ Text formatSearchedText({
       ),
     );
 
-    // Update the current index
+    // uPDATE the current index
     currentIndex = match.end;
   }
 
   // Add the remaining non-matching text span
-  textSpans.add(
-    TextSpan(text: input.substring(currentIndex)),
-  );
+  textSpans.add(TextSpan(text: input.substring(currentIndex)));
 
   // Return the formatted text with spans
   return Text.rich(TextSpan(children: textSpans));

@@ -4,6 +4,7 @@ import 'package:kjv/models/verse.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 // MainProvider class extends ChangeNotifier for state management
+
 class MainProvider extends ChangeNotifier {
   // Controllers and Listeners for managing scroll positions and items
   ItemScrollController itemScrollController = ItemScrollController();
@@ -33,38 +34,35 @@ class MainProvider extends ChangeNotifier {
   Verse? currentVerse;
 
   // Method to update the current Verse and notify listeners
-  void updateCurrentVerse({required Verse verse}) async {
+  void updateCurrentVerse({required Verse verse}) {
     currentVerse = verse;
-    notifyListeners();
-  }
-
-  // List to store selected Verse objects
-  List<Verse> selectedVerse = [];
-
-  // Method to toggle the selection of a Verse and notify listeners
-  void selectVerse({required Verse verse}) {
-    bool contains = selectedVerse.any((element) => element == verse);
-    if (contains) {
-      selectedVerse.remove(verse);
-    } else {
-      selectedVerse.add(verse);
-    }
-    notifyListeners();
-  }
-
-  // Method to clear the selected Verse list and notify listeners
-  void clearSelected() {
-    selectedVerse.clear();
     notifyListeners();
   }
 
   // Method to scroll to a specific index in the list and notify listeners
   void scrollToIndex({required int index}) {
     itemScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.bounceInOut,
-    );
+        index: index, duration: const Duration(milliseconds: 800));
+    notifyListeners();
+  }
+
+  // List to store selected Verse objects
+  List<Verse> selectedVerses = [];
+
+  // Method to toggle the selection of a Verse and notify listeners
+  void toggleVerse({required Verse verse}) {
+    bool contains = selectedVerses.any((element) => element == verse);
+    if (contains) {
+      selectedVerses.remove(verse);
+    } else {
+      selectedVerses.add(verse);
+    }
+    notifyListeners();
+  }
+
+  // Method to clear the selected Verse list and notify listeners
+  void clearSelectedVerses() {
+    selectedVerses.clear();
     notifyListeners();
   }
 }

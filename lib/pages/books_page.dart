@@ -1,12 +1,12 @@
-import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:kjv/models/book.dart';
 import 'package:kjv/models/chapter.dart';
 import 'package:kjv/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:expandable/expandable.dart';
 
-// Page to display books and chapters
 class BooksPage extends StatefulWidget {
   final int chapterIdx;
   final String bookIdx;
@@ -53,44 +53,46 @@ class _BooksPageState extends State<BooksPage> {
               title: const Text("Books"),
             ),
             body: ListView.builder(
-              controller: _autoScrollController,
-              physics: const BouncingScrollPhysics(),
               itemCount: books.length,
+              physics: const BouncingScrollPhysics(),
+              controller: _autoScrollController,
               itemBuilder: (context, index) {
                 Book book = books[index];
                 return AutoScrollTag(
-                  controller: _autoScrollController,
                   key: ValueKey(index),
+                  controller: _autoScrollController,
                   index: index,
                   child: ListTile(
                     // ExpandablePanel to show chapters when the book is tapped
                     title: ExpandablePanel(
                       controller: ExpandableController(
                           initialExpanded: currentBook == book),
+                      collapsed: const SizedBox.shrink(),
                       header: Text(book.title),
                       expanded: Wrap(
                         children: List.generate(
                           book.chapters.length,
                           (index) {
                             Chapter chapter = book.chapters[index];
-                            return GestureDetector(
-                              onTap: () {
-                                // Scroll to the selected chapter and close the page
-                                int idx = mainProvider.verses.indexWhere(
-                                    (element) =>
-                                        element.chapter == chapter.title &&
-                                        element.book == book.title);
-                                mainProvider.updateCurrentVerse(
-                                    verse: mainProvider.verses.firstWhere(
-                                        (element) =>
-                                            element.chapter == chapter.title &&
-                                            element.book == book.title));
-                                mainProvider.scrollToIndex(index: idx);
-                                Navigator.pop(context);
-                              },
-                              child: SizedBox(
-                                height: 45,
-                                width: 45,
+                            return SizedBox(
+                              height: 45,
+                              width: 45,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Scroll to the selected chapter and close the page
+                                  int idx = mainProvider.verses.indexWhere(
+                                      (element) =>
+                                          element.chapter == chapter.title &&
+                                          element.book == book.title);
+                                  mainProvider.updateCurrentVerse(
+                                      verse: mainProvider.verses.firstWhere(
+                                          (element) =>
+                                              element.chapter ==
+                                                  chapter.title &&
+                                              element.book == book.title));
+                                  mainProvider.scrollToIndex(index: idx);
+                                  Get.back();
+                                },
                                 child: Card(
                                   // Styling based on the selected chapter
                                   color: chapter.title == widget.chapterIdx &&
@@ -101,10 +103,7 @@ class _BooksPageState extends State<BooksPage> {
                                       : null,
                                   elevation: 1,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      7.5,
-                                    ),
-                                  ),
+                                      borderRadius: BorderRadius.circular(7.5)),
                                   child: Center(
                                     child: Text(
                                       chapter.title.toString(),
@@ -117,8 +116,6 @@ class _BooksPageState extends State<BooksPage> {
                           },
                         ),
                       ),
-                      // Collapsed widget when the panel is collapsed
-                      collapsed: const SizedBox.shrink(),
                     ),
                   ),
                 );

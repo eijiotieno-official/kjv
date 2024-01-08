@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kjv/models/verse.dart';
 import 'package:kjv/providers/main_provider.dart';
-
 import 'package:provider/provider.dart';
 
-// A widget to display a single verse with optional selection
 class VerseWidget extends StatelessWidget {
-  // Properties for the VerseWidget
   final Verse verse;
   final int index;
-
-  // Constructor to receive verse and index
   const VerseWidget({super.key, required this.verse, required this.index});
 
   @override
@@ -19,16 +14,13 @@ class VerseWidget extends StatelessWidget {
     return Consumer<MainProvider>(
       builder: (context, mainProvider, child) {
         // Check if the current verse is selected
-        bool isSelected = mainProvider.selectedVerse.any((e) => e == verse);
-
-        // ListTile to display the verse with optional selection
+        bool isSelected = mainProvider.selectedVerses.any((e) => e == verse);
         return ListTile(
           onTap: () {
-            // On tap, select or deselect the verse
-            mainProvider.selectVerse(verse: verse);
+            // select or deselect the verse
+            mainProvider.toggleVerse(verse: verse);
           },
           title: RichText(
-            // RichText for styling different parts of the text
             text: TextSpan(
               style: DefaultTextStyle.of(context).style,
               children: <TextSpan>[
@@ -48,9 +40,7 @@ class VerseWidget extends StatelessWidget {
                 TextSpan(
                   text: verse.text.trim(),
                   style: TextStyle(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                    color: isSelected ? Theme.of(context).colorScheme.primary : null,
                     decorationColor: Theme.of(context).colorScheme.primary,
                     decorationStyle: TextDecorationStyle.dotted,
                     decoration: isSelected ? TextDecoration.underline : null,

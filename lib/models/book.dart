@@ -1,11 +1,8 @@
-import 'chapter.dart'; // Importing the 'Chapter' class for the use of Chapter objects
+import 'package:kjv/models/chapter.dart';
 
 class Book {
-  final String title; // Title of the book
-  final List<Chapter>
-      chapters; // List of Chapter objects representing the chapters in the book
-
-  // Constructor to initialize the Book object
+  final String title;
+  final List<Chapter> chapters;
   Book({
     required this.title,
     required this.chapters,
